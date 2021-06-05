@@ -1,0 +1,28 @@
+{
+  "suggest.snippetIndicator": " ",
+  "diagnostic.messageTarget": "echo",
+  "diagnostic.virtualText": true,
+  "diagnostic.virtualTextPrefix": "   ",
+  "diagnostic.errorSign": "",
+  "diagnostic.warningSign": "",
+  "diagnostic.infoSign": "",
+  "diagnostic.hintSign": "",
+  "codeLens.enable": true,
+  "coc.preferences.extensionUpdateCheck": "never",
+  "coc.preferences.snippetStatusText": "",
+	"go.goplsOptions": {
+    "staticcheck": true
+  },
+	"languageserver": {
+		"golang": {
+			"command": "gopls",
+			"rootPatterns": [
+				"go.mod"
+			],
+			"filetypes": [
+				"go"
+			]
+		}
+	},
+	"typescript.autoClosingTags": true
+}
