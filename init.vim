@@ -7,10 +7,6 @@ call plug#begin('~/.local/share/nvim/plugged')
 " themes
 Plug 'joshdick/onedark.vim'
 
-" file system explorer
-Plug 'preservim/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-
 " fuzzy finder
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
@@ -20,7 +16,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 " text manipulation: surround parentheses, brackets, quotes, etc
-Plug 'guns/vim-sexp', { 'for': 'clojure' }
+Plug 'guns/vim-sexp'
 Plug 'tpope/vim-surround'
 
 " use . to repeat plugin mappings 
@@ -28,6 +24,10 @@ Plug 'tpope/vim-repeat'
 
 " better mappings for text manipulation
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
+
+" file system explorer
+Plug 'preservim/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 
 " git diff in the sign column.
 Plug 'airblade/vim-gitgutter'
@@ -41,34 +41,29 @@ Plug 'tpope/vim-commentary'
 " multi-line edit
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
-" Dispatch (async calls)
+" multi Language parser
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+
+" Dispatch
 Plug 'tpope/vim-dispatch'
+Plug 'clojure-vim/vim-jack-in'
 Plug 'radenling/vim-dispatch-neovim'
 
-" coc.nvim
+" lsp client: coc.nvim
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-highlight', { 'do': 'yarn install --frozen-lockfile && yarn build' }
+Plug 'iamcco/coc-vimlsp', { 'do': 'yarn install --frozen-lockfile && yarn build' }
+
+" Clojure REPL
+Plug 'Olical/conjure', {'tag': 'v4.17.0'}
 
 " devicons
 Plug 'ryanoasis/vim-devicons'
 
-" languages
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
-Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
+" Display text with ANSI escape sequences (8 or 16 colors)
+Plug 'm00qek/baleia.nvim'
 
 call plug#end()
-
-" tree sitter config
-lua <<EOF
-require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "bash", "go", "javascript", "json", "regex", "typescript" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
-  ignore_install = {}, -- List of parsers to ignore installing
-  highlight = {
-    enable = true, -- false will disable the whole extension
-    disable = {}, -- list of language that will be disabled
-  },
-}
-EOF
 
 """
 " visual settings
@@ -78,13 +73,12 @@ set encoding=UTF-8 " file encoding
 colorscheme onedark " theme
 set number " display line numbers
 set mouse=a " enable mouse
-set tabstop=4 " tab width
-set shiftwidth=4 " shift width
-set nohlsearch " turnoff search highlight
+set tabstop=2 " tab width
+set shiftwidth=2 " shift width
+" set nohlsearch " turnoff search highlight
 set completeopt=menuone,noinsert,noselect " set completeopt to have a better completion experience
 set nowrap " does not allow line wrap
 
-set expandtab
 
 """
 " rainbow parentheses
@@ -127,26 +121,73 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
     \ "Unknown"   : "?"
     \ }
 
+" baleia
+" " tell Conjure to not strip ANSI sequences
+let g:conjure#log#strip_ansi_escape_sequences_line_limit = 0
+let s:highlighter = luaeval("require('baleia').setup(require('baleia.options').conjure())")
+
+function! s:remove_ansi(tid)
+  let l:save = winsaveview()
+  try | %s/\%x1b[[:;0-9]*m//g | catch 'E486' | endtry
+  call winrestview(l:save)
+endfunction
+
+function! s:enable_colors() 
+  "immediately hide all escape sequences
+  syntax match BaleiaAnsiEscapeCodes /\%x1b\[[:;0-9]*m/ conceal
+  setlocal conceallevel=2
+  setlocal concealcursor=nvic
+
+  " remove them after some time
+  call timer_start(300, funcref('s:remove_ansi'))
+
+  if exists('b:baleia') && b:baleia == v:true 
+    return
+  endif
+  let b:baleia = v:true
+
+  call s:highlighter.automatically(bufnr('%'))
+endfunction
+
+autocmd BufEnter conjure-log-* call s:enable_colors()
 
 """
-" Go
+" integrated terminal
 """
-" disable all linters as that is taken care of by coc.nvim
-let g:go_diagnostics_enabled = 0
-let g:go_metalinter_enabled = []
 
-" don't jump to errors after metalinter is invoked
-let g:go_jump_to_error = 0
+set splitright
+set splitbelow
 
-" syntax highlight
-let g:go_highlight_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_function_calls = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_extra_types = 1
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_generate_tags = 1
+tnoremap <Esc> <C-\><C-j>
+
+function! TestClojure()
+  vsplit +term\ lein\ test-refresh\ :changes-only
+	vertical resize 45
+endfunction
+
+function! TestNpm()
+  vsplit +term\ npm\ run-script\ test 
+	vertical resize 45
+endfunction
+
+function! OpenNvimConfig()
+  tabnew ~/.config/nvim/init.vim
+endfunction
+
+"""
+" treesitter 
+"""
+
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = { "bash", "clojure", "go", "javascript", "json", "python", "regex", "typescript" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ignore_install = {}, -- List of parsers to ignore installing
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+    disable = {},  -- list of language that will be disabled
+  },
+}
+EOF
 
 """
 " coc.nvim config
@@ -319,15 +360,27 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
-"""
-" Custom Functions
-"""
-
-set splitright
-function! OpenTest()
-  vsplit +term\ npm\ run-script\ test
-	vertical resize 50
+"""""" clojure-lsp refactoring
+function! Expand(exp) abort
+    let l:result = expand(a:exp)
+    return l:result ==# '' ? '' : "file://" . l:result
 endfunction
+
+nnoremap <silent> crcc :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'cycle-coll', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crth :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'thread-first', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crtt :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'thread-last', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crtf :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'thread-first-all', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crtl :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'thread-last-all', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> cruw :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'unwind-thread', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crua :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'unwind-all', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crml :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'move-to-let', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1, input('Binding name: ')]})<CR>
+nnoremap <silent> cril :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'introduce-let', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1, input('Binding name: ')]})<CR>
+nnoremap <silent> crel :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'expand-let', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> cram :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'add-missing-libspec', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crcn :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'clean-ns', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> crcp :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'cycle-privacy', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> cris :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'inline-symbol', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
+nnoremap <silent> cref :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'extract-function', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1, input('Function name: ')]})<CR>
 
 """
 " Custom Rules
@@ -336,15 +389,29 @@ endfunction
 let mapleader='\'
 let maplocalleader=','
 
-" map fzf to CTRL+R
-map ; :GFiles<CR>
-map ' :Files<CR>
+" Set config.json.base files JSOn syntax
+autocmd BufNewFile,BufRead *.base set syntax=json
 
-" map CTRL+k to run tests in a new window
-map <C-k> :call OpenTest()<CR>
+" map CTRL+C to copy selection (copy all if no selection)
+map <C-c> :w !pbcopy<CR>
+
+" map fzf to ;
+map ; :GFiles<CR>
+
+" map fzf to CTRL+R
+map " :GFiles?<CR>
 
 " map nerd to CTRL+M
 map <C-m> :NERDTreeToggle<CR>
+
+" map CTRL+L to run lint
+map <C-l> :Dispatch lein lint<CR>
+
+" map CTRL+j to start nREPL server in a new tab 
+map <C-j> :Lein! repl :headless<CR>
+
+" map CTRL+k to run tests in a new window
+map <C-k> :call OpenTest()<CR>
 
 " move between taps with CTRL+-> and CTRL+<-
 map <C-Left>  gT

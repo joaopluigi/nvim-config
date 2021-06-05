@@ -10,19 +10,28 @@
   "codeLens.enable": true,
   "coc.preferences.extensionUpdateCheck": "never",
   "coc.preferences.snippetStatusText": "",
-	"go.goplsOptions": {
-    "staticcheck": true
-  },
-	"languageserver": {
-		"golang": {
-			"command": "gopls",
-			"rootPatterns": [
-				"go.mod"
-			],
-			"filetypes": [
-				"go"
-			]
-		}
-	},
-	"typescript.autoClosingTags": true
+  "languageserver": {
+    "clojure-lsp": {
+      "command": "clojure-lsp",
+      "filetypes": ["clojure"],
+      "rootPatterns": ["project.clj", "deps.edn"],
+      "additionalSchemes": ["jar", "zipfile"],
+      "trace.server": "verbose",
+      "initializationOptions": {
+        "source-paths": ["src", "test"],
+        "keep-require-at-start?": true,
+        "project-specs": [
+          {
+            "project-path": "deps.edn",
+            "classpath-cmd": ["clj", "-Spath"]
+          }
+        ]
+      }
+    },
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod"],
+      "filetypes": ["go"]
+    }
+  }
 }
