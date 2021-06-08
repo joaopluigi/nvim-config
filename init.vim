@@ -75,6 +75,7 @@ set number " display line numbers
 set mouse=a " enable mouse
 set tabstop=2 " tab width
 set shiftwidth=2 " shift width
+set expandtab " space instead of tab
 " set nohlsearch " turnoff search highlight
 set completeopt=menuone,noinsert,noselect " set completeopt to have a better completion experience
 set nowrap " does not allow line wrap
@@ -382,6 +383,9 @@ nnoremap <silent> crcp :call CocRequest('clojure-lsp', 'workspace/executeCommand
 nnoremap <silent> cris :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'inline-symbol', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1]})<CR>
 nnoremap <silent> cref :call CocRequest('clojure-lsp', 'workspace/executeCommand', {'command': 'extract-function', 'arguments': [Expand('%:p'), line('.') - 1, col('.') - 1, input('Function name: ')]})<CR>
 
+""""" commands
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+
 """
 " Custom Rules
 """
@@ -395,10 +399,10 @@ autocmd BufNewFile,BufRead *.base set syntax=json
 " map CTRL+C to copy selection (copy all if no selection)
 map <C-c> :w !pbcopy<CR>
 
-" map fzf to ;
+" map fzf GFiles to ;
 map ; :GFiles<CR>
 
-" map fzf to CTRL+R
+" map fzf GFiles? to "
 map " :GFiles?<CR>
 
 " map nerd to CTRL+M
@@ -411,7 +415,7 @@ map <C-l> :Dispatch lein lint<CR>
 map <C-j> :Lein! repl :headless<CR>
 
 " map CTRL+k to run tests in a new window
-map <C-k> :call OpenTest()<CR>
+map <C-k> :call Test 
 
 " move between taps with CTRL+-> and CTRL+<-
 map <C-Left>  gT

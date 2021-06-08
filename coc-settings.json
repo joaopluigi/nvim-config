@@ -33,5 +33,7 @@
       "rootPatterns": ["go.mod"],
       "filetypes": ["go"]
     }
-  }
+  },
+  "prettier.requireConfig": true,
+  "prettier.onlyUseLocalVersion": true
 }
