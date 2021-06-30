@@ -425,14 +425,14 @@ nmap <C-m> :NERDTreeToggle<CR>
 " map CTRL+c on command line to run lint
 cmap <C-c> call Config
 
-" map CTRL+L on command line to run lint
+" map CTRL+l on command line to run lint
 cmap <C-l> call Lint
+
+" map CTRL+r on command line to run REPL 
+cmap <C-r> call REPL
 
 " map CTRL+t on command line to run tests
 cmap <C-t> call Test
-
-" map CTRL+j on command line to run REPL 
-cmap <C-r> call REPL
 
 " move between tabs with CTRL+-> and CTRL+<-
 map <C-Left>  gT
