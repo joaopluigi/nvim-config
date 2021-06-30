@@ -411,16 +411,16 @@ let mapleader='\'
 let maplocalleader=','
 
 " Set config.json.base files JSOn syntax
-autocmd BufNewFile,BufRead *.base set syntax=json
+autocmd BufNewFile,BufRead *.json.base set syntax=json
 
-" map fzf GFiles to ;
-map ; :GFiles<CR>
+" map fzf GFiles on normal mode to ;
+nmap ; :GFiles<CR>
 
-" map fzf GFiles? to "
-map " :GFiles?<CR>
+" map fzf GFiles? on normal mode to "
+nmap " :GFiles?<CR>
 
-" map nerd to CTRL+M
-map <C-m> :NERDTreeToggle<CR>
+" map NERDTreeToggle on normal mode to CTRL+M
+nmap <C-m> :NERDTreeToggle<CR>
 
 " map CTRL+c on command line to run lint
 cmap <C-c> call Config
