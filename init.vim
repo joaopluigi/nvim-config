@@ -69,6 +69,7 @@ call plug#end()
 " visual settings
 """
 
+set clipboard=unnamed " make operations such as yy, D, and P work with the clipboard 
 set encoding=UTF-8 " file encoding
 colorscheme onedark " theme
 set number " display line numbers
@@ -153,29 +154,6 @@ endfunction
 autocmd BufEnter conjure-log-* call s:enable_colors()
 
 """
-" integrated terminal
-"""
-
-set splitright
-set splitbelow
-
-tnoremap <Esc> <C-\><C-j>
-
-function! TestClojure()
-  vsplit +term\ lein\ test-refresh\ :changes-only
-	vertical resize 45
-endfunction
-
-function! TestNpm()
-  vsplit +term\ npm\ run-script\ test 
-	vertical resize 45
-endfunction
-
-function! OpenNvimConfig()
-  tabnew ~/.config/nvim/init.vim
-endfunction
-
-"""
 " treesitter 
 """
 
@@ -193,6 +171,8 @@ EOF
 """
 " coc.nvim config
 """
+
+let g:coc_global_extensions = ['coc-conjure']
 
 " TextEdit might fail if hidden is not set.
 set hidden
@@ -341,7 +321,9 @@ command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organize
 " Add (Neo)Vim's native statusline support.
 " NOTE: Please see `:h coc-status` for integrations with external plugins that
 " provide custom statusline: lightline.vim, vim-airline.
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+" set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+let g:airline_section_error = '%{airline#util#wrap(airline#extensions#coc#get_error(),0)}'
+let g:airline_section_warning = '%{airline#util#wrap(airline#extensions#coc#get_warning(),0)}'
 
 " Mappings for CoCList
 " Show all diagnostics.
@@ -387,7 +369,42 @@ nnoremap <silent> cref :call CocRequest('clojure-lsp', 'workspace/executeCommand
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 
 """
-" Custom Rules
+" Custom functions
+"""
+
+set splitright
+set splitbelow
+
+tnoremap <Esc> <C-\><C-j>
+
+function! ConfigCredentials()
+  Dispatch nu aws credentials refresh 
+endfunction
+
+function! ConfigNvim()
+  tabnew ~/.config/nvim/init.vim
+endfunction
+
+function! LintClojure()
+  Dispatch lein lint
+endfunction
+
+function! REPLClojure()
+  Lein! repl :headless
+endfunction
+
+function! TestClojure()
+  vsplit +term\ lein\ test-refresh\ :changes-only
+	vertical resize 45
+endfunction
+
+function! TestNpm()
+  vsplit +term\ npm\ run-script\ test 
+	vertical resize 45
+endfunction
+
+"""
+" Custom mapping
 """
 
 let mapleader='\'
@@ -395,9 +412,6 @@ let maplocalleader=','
 
 " Set config.json.base files JSOn syntax
 autocmd BufNewFile,BufRead *.base set syntax=json
-
-" map CTRL+C to copy selection (copy all if no selection)
-map <C-c> :w !pbcopy<CR>
 
 " map fzf GFiles to ;
 map ; :GFiles<CR>
@@ -408,15 +422,18 @@ map " :GFiles?<CR>
 " map nerd to CTRL+M
 map <C-m> :NERDTreeToggle<CR>
 
-" map CTRL+L to run lint
-map <C-l> :Dispatch lein lint<CR>
+" map CTRL+c on command line to run lint
+cmap <C-c> call Config
 
-" map CTRL+j to start nREPL server in a new tab 
-map <C-j> :Lein! repl :headless<CR>
+" map CTRL+L on command line to run lint
+cmap <C-l> call Lint
 
-" map CTRL+k to run tests in a new window
-map <C-k> :call Test 
+" map CTRL+t on command line to run tests
+cmap <C-t> call Test
 
-" move between taps with CTRL+-> and CTRL+<-
+" map CTRL+j on command line to run REPL 
+cmap <C-r> call REPL
+
+" move between tabs with CTRL+-> and CTRL+<-
 map <C-Left>  gT
 map <C-Right> gt
