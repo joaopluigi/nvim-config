@@ -172,7 +172,7 @@ EOF
 " coc.nvim config
 """
 
-let g:coc_global_extensions = ['coc-conjure']
+let g:coc_global_extensions = ['coc-conjure', 'coc-tsserver', 'coc-json', 'coc-prettier', 'coc-styled-components', 'coc-eslint', 'coc-react-refactor' , 'coc-html', 'coc-jest', 'coc-highlight', 'coc-css']
 
 " TextEdit might fail if hidden is not set.
 set hidden
