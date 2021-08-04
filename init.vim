@@ -32,6 +32,9 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " git diff in the sign column.
 Plug 'airblade/vim-gitgutter'
 
+" git diff visualization in a split view
+Plug 'tpope/vim-fugitive'
+
 " rainbow parentheses
 Plug 'luochen1990/rainbow'
 
@@ -62,6 +65,9 @@ Plug 'ryanoasis/vim-devicons'
 
 " Display text with ANSI escape sequences (8 or 16 colors)
 Plug 'm00qek/baleia.nvim'
+
+" tab management
+Plug 'm00qek/nvim-contabs'
 
 call plug#end()
 
@@ -122,6 +128,30 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
     \ 'Ignored'   : '☒',
     \ "Unknown"   : "?"
     \ }
+
+" contabs
+" " configure where to look for projects
+" " - folders in $NU_HOME that are git repos
+" " - Neovim config folder
+let g:contabs#project#locations = [
+\ { 'path': '$NU_HOME',
+\   'depth': 1,
+\   'git_only': v:true,
+\   'entrypoint': ['src/*/service.clj', 'project.clj'] },
+\ { 'path': '~/.config/nvim',
+\   'entrypoint': [ 'init.vim' ],
+\   'formatter': { _ -> 'Neovim (~/.config/nvim)' } }
+\]
+
+" " configure native tabline
+" let g:contabs#integrations#tabline#theme = 'project/pathshorten'
+" set tabline=%!contabs#integrations#tabline#create()
+
+" " command to open a project in current tab
+command! -nargs=1 -complete=dir EP call contabs#project#edit(<q-args>)
+
+" " command to open a project in a new tab
+command! -nargs=1 -complete=dir TP call contabs#project#tabedit(<q-args>)
 
 " baleia
 " " tell Conjure to not strip ANSI sequences
@@ -394,8 +424,7 @@ function! REPLClojure()
 endfunction
 
 function! TestClojure()
-  vsplit +term\ lein\ test-refresh\ :changes-only
-	vertical resize 45
+  ConjureCljRunCurrentNsTests
 endfunction
 
 function! TestNpm()
@@ -417,7 +446,15 @@ autocmd BufNewFile,BufRead *.json.base set syntax=json
 nmap ; :GFiles<CR>
 
 " map fzf GFiles? on normal mode to "
-nmap " :GFiles?<CR>
+nmap <LocalLeader>; :GFiles?<CR>
+
+" fuzzy search for projects
+" - <CR>  open selected project in current tab
+" - <C-T> open selected project in a new tab
+nnoremap <silent> <LocalLeader>p :call contabs#project#select()<CR>
+
+" fuzzy search for open buffers
+nnoremap <silent> <LocalLeader>b :call contabs#buffer#select()<CR>
 
 " map NERDTreeToggle on normal mode to CTRL+M
 nmap <C-m> :NERDTreeToggle<CR>
