@@ -159,7 +159,7 @@ let g:conjure#client#clojure#nrepl#test#current_form_names = ['deftest', 'defflo
 " baleia
 " " tell Conjure to not strip ANSI sequences
 let g:conjure#log#strip_ansi_escape_sequences_line_limit = 0
-let s:highlighter = luaeval("require('baleia').setup(require('baleia.options').conjure())")
+" let s:highlighter = luaeval("require('baleia').setup(require('baleia.options').conjure())")
 
 function! s:remove_ansi(tid)
   let l:save = winsaveview()
@@ -192,7 +192,7 @@ autocmd BufEnter conjure-log-* call s:enable_colors()
 
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "bash", "clojure", "go", "javascript", "json", "python", "regex", "typescript" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ensure_installed = { "bash", "clojure", "dart", "go", "javascript", "json", "python", "regex", "typescript" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   ignore_install = {}, -- List of parsers to ignore installing
   highlight = {
     enable = true,              -- false will disable the whole extension
@@ -205,7 +205,7 @@ EOF
 " coc.nvim config
 """
 
-let g:coc_global_extensions = ['coc-conjure', 'coc-tsserver', 'coc-json', 'coc-prettier', 'coc-styled-components', 'coc-eslint', 'coc-react-refactor' , 'coc-html', 'coc-jest', 'coc-highlight', 'coc-css']
+let g:coc_global_extensions = ['coc-conjure', 'coc-flutter', 'coc-tsserver', 'coc-json', 'coc-prettier', 'coc-styled-components', 'coc-eslint', 'coc-react-refactor' , 'coc-html', 'coc-jest', 'coc-highlight', 'coc-css']
 
 " TextEdit might fail if hidden is not set.
 set hidden
