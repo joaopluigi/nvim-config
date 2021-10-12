@@ -144,14 +144,17 @@ let g:contabs#project#locations = [
 \]
 
 " " configure native tabline
-" let g:contabs#integrations#tabline#theme = 'project/pathshorten'
-" set tabline=%!contabs#integrations#tabline#create()
+let g:contabs#integrations#tabline#theme = 'project/pathshorten'
+set tabline=%!contabs#integrations#tabline#create()
 
 " " command to open a project in current tab
 command! -nargs=1 -complete=dir EP call contabs#project#edit(<q-args>)
 
 " " command to open a project in a new tab
 command! -nargs=1 -complete=dir TP call contabs#project#tabedit(<q-args>)
+
+" conjure
+let g:conjure#client#clojure#nrepl#test#current_form_names = ['deftest', 'defflow']
 
 " baleia
 " " tell Conjure to not strip ANSI sequences
@@ -420,7 +423,7 @@ function! LintClojure()
 endfunction
 
 function! REPLClojure()
-  Lein! repl :headless
+  Lein! with-profiles +repl repl :headless
 endfunction
 
 function! TestClojure()
