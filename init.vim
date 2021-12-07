@@ -69,6 +69,9 @@ Plug 'm00qek/baleia.nvim'
 " tab management
 Plug 'm00qek/nvim-contabs'
 
+" markdown preview
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
 call plug#end()
 
 """
@@ -103,6 +106,16 @@ let g:airline_theme='base16'
 let g:airline#extensions#coc#enabled = 1
 let airline#extensions#coc#error_symbol = ' '
 let airline#extensions#coc#warning_symbol = ' '
+" let g:airline#extensions#tabline#enabled = 1
+
+" function! AirlineInit()
+"   let g:airline_section_a = airline#section#create(['mode'])
+"   let g:airline_section_b = airline#section#create_left(['branch', 'hunks'])
+"   let g:airline_section_c = airline#section#create(['filename'])
+"   let g:airline_section_x = airline#section#create([''])
+"   let g:airline_section_y = airline#section#create(['%{strftime("%H:%M")}'])
+" endfunction
+" autocmd VimEnter * call AirlineInit()
 
 """ 
 " nerdtree
@@ -112,8 +125,20 @@ let NERDTreeShowHidden = 1
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 let NERDTreeIgnore = []
-let NERDTreeStatusline = ''
-" autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+let NERDTreeStatuslin = ''
+
+" " Exit Vim if NERDTree is the only window remaining in the only tab.
+autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
+
+" " Close the tab if NERDTree is the only window remaining in it.
+autocmd BufEnter * if winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
+
+" " If another buffer tries to replace NERDTree, put it in the other window, and bring back NERDTree.
+autocmd BufEnter * if bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
+    \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer'.buf | endif
+
+" " Open the existing NERDTree on each new tab.
+autocmd BufWinEnter * if getcmdwintype() == '' | silent NERDTreeMirror | endif
 
 " nerdtree-git-plugin
 let g:NERDTreeGitStatusIndicatorMapCustom = {
@@ -144,7 +169,7 @@ let g:contabs#project#locations = [
 \]
 
 " " configure native tabline
-let g:contabs#integrations#tabline#theme = 'project/pathshorten'
+" let g:contabs#integrations#tabline#theme = 'project/pathshorten'
 set tabline=%!contabs#integrations#tabline#create()
 
 " " command to open a project in current tab
@@ -181,7 +206,7 @@ function! s:enable_colors()
   endif
   let b:baleia = v:true
 
-  call s:highlighter.automatically(bufnr('%'))
+" call s:highlighter.automatically(bufnr('%'))
 endfunction
 
 autocmd BufEnter conjure-log-* call s:enable_colors()
@@ -205,7 +230,7 @@ EOF
 " coc.nvim config
 """
 
-let g:coc_global_extensions = ['coc-conjure', 'coc-flutter', 'coc-tsserver', 'coc-json', 'coc-prettier', 'coc-styled-components', 'coc-eslint', 'coc-react-refactor' , 'coc-html', 'coc-jest', 'coc-highlight', 'coc-css']
+let g:coc_global_extensions = ['coc-conjure', 'coc-flutter-tools', 'coc-tsserver', 'coc-json', 'coc-prettier', 'coc-styled-components', 'coc-eslint', 'coc-react-refactor' , 'coc-html', 'coc-jest', 'coc-highlight', 'coc-css']
 
 " TextEdit might fail if hidden is not set.
 set hidden
@@ -457,7 +482,7 @@ nmap <LocalLeader>; :GFiles?<CR>
 nnoremap <silent> <LocalLeader>p :call contabs#project#select()<CR>
 
 " fuzzy search for open buffers
-nnoremap <silent> <LocalLeader>b :call contabs#buffer#select()<CR>
+nnoremap <silent> <LocalLeader>b :Buffers<CR>
 
 " map NERDTreeToggle on normal mode to CTRL+M
 nmap <C-m> :NERDTreeToggle<CR>
